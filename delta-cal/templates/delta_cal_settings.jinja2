@@ -1,0 +1,21 @@
+<h4>Delta Autocalibration Plugin</h4>
+This plugin will calibrate a delta configuration printer using dc42's "least squares" calibration algorithm.<br><br>
+
+<strong>Connection Status: <span style="color: green" data-bind="visible: isConnected()">connected</span>
+<span style="color: red" data-bind="visible: !isConnected()">not connected</span></strong><br>
+
+Your machine is <span style="color: red" data-bind="visible: isConnected() && !isRepetierFirmware()">not</span> Repetier Firmware based<br>
+<br>
+
+
+<form class="form-horizontal">
+    <button data-bind="enable: isRepetierFirmware() && isConnected(), click: calibrateX">{{ _('Calibrate X-axis') }}</button>
+    <button data-bind="enable: isRepetierFirmware() && isConnected(), click: calibrateY">{{ _('Calibrate Y-axis') }}</button>
+    <button data-bind="enable: isRepetierFirmware() && isConnected(), click: calibrateZ">{{ _('Calibrate Z-axis') }}</button>
+   
+   <!--- <button data-bind="enabled: isRepetierFirmware, click: loadEeprom">{{ _('Load EEprom') }}</button>
+   
+    <button data-bind="enabled: isRepetierFirmware, click: saveEeprom">{{ _('Save EEprom') }}</button> -->
+	
+    <br><br><strong>Progress: </strong><span data-bind="text: statusMessage"></span><br>
+</form>
