@@ -1,5 +1,5 @@
 $(function() {
-    //"use strict";
+    "use strict";
     function DeltaAutoCalViewModel(parameters) {
         var self = this;
         self.control = parameters[0];
