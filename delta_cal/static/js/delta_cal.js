@@ -1,6 +1,6 @@
 $(function() {
     //"use strict";
-    function DViewModel(parameters) {
+    function DeltaAutoCalViewModel(parameters) {
         var self = this;
         self.control = parameters[0];
         self.connection = parameters[1];
@@ -282,7 +282,7 @@ $(function() {
     }
 
     OCTOPRINT_VIEWMODELS.push([
-        DViewModel,
+        DeltaAutoCalViewModel,
         ["controlViewModel", "connectionViewModel"],
         "#settings_plugin_delta_cal"
     ]);
