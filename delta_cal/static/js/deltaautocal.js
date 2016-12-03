@@ -10,7 +10,7 @@ $(function () {
         const SMC_MAX_V2 = 2;
         const SMC_ERIS = 3;
         const SMC_MAX_V3 = 5;  // we skipped 4 because the DropLit is an SLA printer. :)
-        const DEFAULT_PROBE_HEIGHT = 25; 
+        const DEFAULT_PROBE_HEIGHT = 25;
 
         self.machineType = 0;
 
@@ -76,6 +76,9 @@ $(function () {
         var newXPos = 0.0;
         var newYPos = 0.0;
         var newZPos = 0.0;
+
+        var m665 = "";
+        var m666 = "";
 
         var degreesToRadians = Math.PI / 180.0;
 
@@ -511,15 +514,13 @@ $(function () {
             //convertIncomingEndstops();
             try {
                 var rslt = DoDeltaCalibration();
-                //document.getElementById("result").innerHTML = "&nbsp;Success! " + rslt + "&nbsp;";
-                //document.getElementById("result").style.backgroundColor = "LightGreen";
-                self.statusMessage("Success!");
-
+                self.probingActive = false; // all done!
                 convertOutgoingEndstops();
                 setNewParameters();
                 generateCommands();
-                //document.getElementById("copyButton").disabled = false;
-                self.probingActive = false; // all done!
+                self.control.sendCustomCommand({ command: m665 }); // commit changes!
+                self.control.sendCustomCommand({ command: m666 }); // commit changes!
+                self.statusMessage("Success, changes written to EEPROM.");
             }
             catch (err) {
                 self.statusMessage(self.statusMessage() + "Error! - " + err);
@@ -530,8 +531,8 @@ $(function () {
         }
 
         function generateCommands() {
-            var m665 = "M665 R" + deltaParams.radius.toFixed(2) + " L" + deltaParams.diagonal.toFixed(2);
-            var m666 = "M666 X" + deltaParams.xstop.toFixed(2) + " Y" + deltaParams.ystop.toFixed(2) + " Z" + deltaParams.zstop.toFixed(2);
+            m665 = "M665 R" + deltaParams.radius.toFixed(2) + " L" + deltaParams.diagonal.toFixed(2);
+            m666 = "M666 X" + deltaParams.xstop.toFixed(2) + " Y" + deltaParams.ystop.toFixed(2) + " Z" + deltaParams.zstop.toFixed(2);
             switch (firmware) {
                 case 'RRF':
                     m665 += " H" + deltaParams.homedHeight.toFixed(2) + " B" + bedRadius.toFixed(2)
