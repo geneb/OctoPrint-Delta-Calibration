@@ -10,6 +10,7 @@ $(function () {
         const SMC_MAX_V2 = 2;
         const SMC_ERIS = 3;
         const SMC_MAX_V3 = 5;  // we skipped 4 because the DropLit is an SLA printer. :)
+        const DEFAULT_PROBE_HEIGHT = 25; 
 
         self.machineType = 0;
 
@@ -32,6 +33,8 @@ $(function () {
 
         self.statusMessage = ko.observable("");
         self.statusDebug = ko.observable("");
+        self.statusM665 = ko.observable("");
+        self.statusM666 = ko.observable("");
 
         // Delta Calibration variables.
         self.sentM114 = false;
@@ -492,7 +495,7 @@ $(function () {
             // first probe.
             self.control.sendCustomCommand({
                 command: "G0 X" + xBedProbePoints[self.probeCount] +
-                " Y" + yBedProbePoints[self.probeCount] + " Z50 F6500"
+                " Y" + yBedProbePoints[self.probeCount] + " Z" + DEFAULT_PROBE_HEIGHT + " F6500"
             });
 
             self.control.sendCustomCommand({ command: "G30" });
@@ -555,6 +558,8 @@ $(function () {
                 commands += "\n; Set homed height " + deltaParams.homedHeight.toFixed(2) + "mm in config.h";
             }
             self.commandText = commands;
+            self.statusM665(m665);
+            self.statusM666(m666);
         }
 
 
@@ -646,7 +651,8 @@ $(function () {
                         if (line.includes("X") && line.includes("Y") && line.includes("Z") && line.includes("E")) {
                             // we've got the result of a probe!
                             var coords = line.split(" ");
-                            self.statusDebug(self.statusDebug() + "Probe value: " + coords[3]);
+                            self.statusDebug(self.statusDebug() + " Probe value: " + coords[3].substring(2));
+                            zBedProbePoints[self.probeCount] = parseFloat(coords[3].substring(2));
                             self.probeHot = false;
                             // store the result.
                             //zBedProbePoints[self.probeCount] = ...
@@ -657,7 +663,7 @@ $(function () {
                                 // probe next point.
                                 self.control.sendCustomCommand({
                                     command: "G0 X" + xBedProbePoints[self.probeCount] +
-                                    " Y" + yBedProbePoints[self.probeCount] + " Z50 F6500"
+                                    " Y" + yBedProbePoints[self.probeCount] + " Z" + DEFAULT_PROBE_HEIGHT + " F6500"
                                 });
 
                                 self.control.sendCustomCommand({ command: "G30" });
@@ -808,7 +814,7 @@ $(function () {
                 if (iteration == 2) { break; }
             }
 
-            self.statusMessage(self.statusMessage() + "Calibrated " + numFactors + " factors using " + numPoints + " points, deviation before " + Math.sqrt(initialSumOfSquares / numPoints).toFixed(2)
+            self.statusDebug(self.statusDebug() + "    Calibrated " + numFactors + " factors using " + numPoints + " points, deviation before " + Math.sqrt(initialSumOfSquares / numPoints).toFixed(2)
                 + " after " + expectedRmsError.toFixed(2));
 
             // // first we home the printer.
