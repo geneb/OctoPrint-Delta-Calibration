@@ -11,7 +11,7 @@ class DeltaCalPlugin(octoprint.plugin.AssetPlugin,
 		
     def get_assets(self):
         return dict(
-            js=["js/delta_cal.js"]
+            js=["js/deltaautocal.js"]
         )
 
     def get_template_configs(self):
