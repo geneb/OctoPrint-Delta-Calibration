@@ -19,11 +19,6 @@ $(function () {
 
         self.eepromDataRegEx = /EPR:(\d+) (\d+) ([^\s]+) (.+)/;
 
-        self.M119RegExMinH = "";
-        self.M119RegExMaxH = "";
-        self.M119RegExMinL = "";
-        self.M119RegExMaxL = "";
-
         // this creates functions that can be set here in code and can be referenced
         // externally via the jinja2 file.
         self.isRepetierFirmware = ko.observable(false);
@@ -148,6 +143,7 @@ $(function () {
         }
 
         Matrix.prototype.Print = function (tag) {
+            // We don't use this...
             var rslt = tag + " {<br/>";
             for (var i = 0; i < this.data.length; ++i) {
                 var row = this.data[i];
@@ -341,10 +337,6 @@ $(function () {
 
 
         function calcProbePoints() {
-            // This function produces a set of recommended probing points based on initial geometry values
-            // obtained from the web page via getParameters.
-            //numPoints = +document.getElementById("numPoints").value;  // Number of points to probe
-            //bedRadius = +document.getElementById("bedradius").value;  // Bed radius.
             if (numPoints == 4) {
                 for (var i = 0; i < 3; ++i) {
                     xBedProbePoints[i] = (bedRadius * Math.sin((2 * Math.PI * i) / 3)).toFixed(2);
@@ -512,12 +504,7 @@ $(function () {
         }
 
         function startDeltaCalcEngine() {
-            //numPoints = 7;  // these should be configurable at some point.
-            //numFactors = 6;
-            //firmware = "Repetier"
-
-            //setParameters();
-            //convertIncomingEndstops();
+            
             try {
                 var rslt = DoDeltaCalibration();
                 self.probingActive = false; // all done!
@@ -530,9 +517,6 @@ $(function () {
             }
             catch (err) {
                 self.statusMessage(self.statusMessage() + "Error! - " + err);
-                //document.getElementById("result").innerHTML = "&nbsp;Error! " + err + "&nbsp;";
-                //document.getElementById("result").style.backgroundColor = "LightPink";
-                //document.getElementById("copyButton").disabled = true;
             }
         }
 
@@ -568,8 +552,6 @@ $(function () {
             self.statusM665(m665);
             self.statusM666(m666);
         }
-
-
 
         self.currentAxis = "";
         self.currentInterval = 0;
@@ -647,8 +629,6 @@ $(function () {
                             self.statusMessage(self.statusMessage() + "M114 Result: " + line);
                             self.sentM114 = false;
                         }
-                        // self.statusMessage(self.statusMessage() + "M114 Result: " + line);
-                        // self.sentM114 = false;
                     }
                     if (line.includes("zprobing")) {
                         self.probeHot = true;
@@ -661,8 +641,6 @@ $(function () {
                             self.statusDebug(self.statusDebug() + " Probe value: " + coords[3].substring(2));
                             zBedProbePoints[self.probeCount] = parseFloat(coords[3].substring(2));
                             self.probeHot = false;
-                            // store the result.
-                            //zBedProbePoints[self.probeCount] = ...
                             self.probeCount++;
                             if (self.probeCount == numPoints) {
                                 startDeltaCalcEngine();  // doooo eeeeeeet!
@@ -676,24 +654,7 @@ $(function () {
                                 self.control.sendCustomCommand({ command: "G30" });
                             }
                         }
-
                     }
-                    //ugly workaround...
-                    //check endstop status and call next iteration
-                    // if (self.M119RegExMinH != "" && self.currentAxis != "") {
-                    //     if (new RegExp(self.M119RegExMinH).test(line)) {
-                    //         self._calibrationStep(1, true);
-                    //     }
-                    //     if (new RegExp(self.M119RegExMaxH).test(line)) {
-                    //         self._calibrationStep(-1, true);
-                    //     }
-                    //     if (new RegExp(self.M119RegExMinL).test(line)) {
-                    //         self._calibrationStep(1, false);
-                    //     }
-                    //     if (new RegExp(self.M119RegExMaxL).test(line)) {
-                    //         self._calibrationStep(-1, false);
-                    //     }
-                    // }
                 });
             }
         };
@@ -823,14 +784,7 @@ $(function () {
 
             self.statusDebug(self.statusDebug() + "    Calibrated " + numFactors + " factors using " + numPoints + " points, deviation before " + Math.sqrt(initialSumOfSquares / numPoints).toFixed(2)
                 + " after " + expectedRmsError.toFixed(2));
-
-            // // first we home the printer.
-            // self.control.sendCustomCommand({ command: "G28" });
-            // // now position to our first point...
-            // self.control.sendCustomCommand({ command: "G0 X50 Y50 Z50 F6500" });
-            // // now we probe!
-            // self.control.sendCustomCommand({ command: "G30" });
-            // self.probingActive = true;
+     
         }
         ////////////////////////////////////////////////////////////////////////
         // End of dc42's code.
@@ -842,165 +796,7 @@ $(function () {
             self.statusMessage(self.statusMessage() + "Sent M114.");
             self.sentM114 = true;
         }
-        // self.calibrateX = function () {
-        //     self._calibrate("X");
-        // }
-        // self.calibrateY = function () {
-        //     self._calibrate("Y");
-        // }
-        // self.calibrateZ = function () {
-        //     self._calibrate("Z");
-        // }
-
-        // self._calibrate = function (axis) {
-        //     //fetch current values
-        //     self.statusMessage("Fetching eeprom data");
-        //     self.loadEeprom();
-        //     //move to endstop
-        //     self.currentAxis = axis;
-        //     self.currentInterval = 0.0;
-
-        //     setTimeout(function () { self._calibrateIteration(); }, 5000);
-        // }
-
-        // self._calibrateIteration = function () {
-        //     if (self.currentAxis != "") {
-        //         self.statusMessage("Run calibration iteration " + (self.currentIteration + 1));
-
-        //         if (self.currentIteration == 0) {
-        //             //set calibration to 0
-        //             self._setEepromValue(self.currentAxis + " backlash", 0.0);
-
-        //             self.M119RegExMinH = self.currentAxis.toLowerCase() + "_min:H";
-        //             self.M119RegExMaxH = self.currentAxis.toLowerCase() + "_max:H";
-        //             self.M119RegExMinL = self.currentAxis.toLowerCase() + "_min:L";
-        //             self.M119RegExMaxL = self.currentAxis.toLowerCase() + "_max:L";
-        //             //Recv: x_min:H y_max:H z_max:H
-
-        //             //store extruder offsets
-        //             var i = 1;
-        //             do {
-        //                 var offset = self._getEepromValue("Extr." + i + " " + self.currentAxis + "-offset");
-        //                 if (offset) {
-        //                     self.extruderOffset.push(offset);
-        //                     self._setEepromValue("Extr." + i + " " + self.currentAxis + "-offset", 0);
-        //                 }
-        //                 i++;
-        //             } while (offset);
-
-        //             self.saveEeprom();
-
-        //             //relative positioning
-        //             self.control.sendCustomCommand({ command: "G91" });
-        //             //home axis
-        //             self.control.sendCustomCommand({ command: "G28 " + self.currentAxis + "0" });
-        //             self.control.sendCustomCommand({ command: "M400" });
-        //             self.control.sendCustomCommand({ command: "M400" });
-        //             self.control.sendCustomCommand({ command: "M400" });
-        //             self.control.sendCustomCommand({ command: "M400" });
-        //             self.control.sendCustomCommand({ command: "M400" });
-        //             self.control.sendCustomCommand({ command: "G4 P0" })
-        //             self.currentIteration += 1;
-
-        //             //trigger endstop check
-        //             self.control.sendCustomCommand({ command: "M119" });
-        //         }
-        //         else if (2 >= self.currentIteration > 0) {
-        //             self.control.sendCustomCommand({ command: "G28 " + self.currentAxis + "0" });
-        //             self.control.sendCustomCommand({ command: "M400" });
-        //             self.control.sendCustomCommand({ command: "M400" });
-        //             self.control.sendCustomCommand({ command: "M400" });
-        //             self.control.sendCustomCommand({ command: "M400" });
-        //             self.control.sendCustomCommand({ command: "M400" });
-        //             self.control.sendCustomCommand({ command: "G4 P0" });
-        //             //trigger endstop check
-        //             self.currentIteration += 1;
-        //             self.control.sendCustomCommand({ command: "M119" });
-        //         }
-        //         else if (self.currentIteration > 2) {
-        //             var newBacklash = 0;
-        //             //average results
-        //             var results = self.calibrationResult;
-        //             for (var i = 0; i < results.length; i++) {
-        //                 newBacklash += results[i];
-        //             }
-        //             newBacklash = newBacklash / results.length;
-        //             newBacklash = Math.round((newBacklash) * 10000) / 10000;
-        //             self._setEepromValue(self.currentAxis + " backlash", newBacklash);
-
-        //             //restore extruder offset
-        //             for (var i = 0; i < self.extruderOffset.length; i++) {
-        //                 self._setEepromValue("Extr." + (i + 1) + " " + self.currentAxis + "-offset", self.extruderOffset[i]);
-        //             }
-
-        //             self.saveEeprom();
-        //             self.currentAxis = "";
-        //             self.M119RegExMinH = "";
-        //             self.M119RegExMaxH = "";
-        //             self.M119RegExMinL = "";
-        //             self.M119RegExMaxL = "";
-        //             self.currentIteration = 0;
-        //             self.statusMessage("Set backlash to " + newBacklash);
-        //             self.calibrationResult = [];
-        //             self.extruderOffset = [];
-        //             //absolute positioning
-        //             self.control.sendCustomCommand({ command: "G90" });
-        //         }
-        //     }
-        // }
-
-        // self._calibrationStep = function (sign, endstopStatus) {
-        //     if (endstopStatus) { //endstop still triggered, keep moving
-        //         self.control.sendCustomCommand({ command: "G1 " + self.currentAxis + sign * self.calibrationStepSize + " F500" });
-        //         self.currentInterval += self.calibrationStepSize;
-        //         self.control.sendCustomCommand({ command: "M400" });
-        //         self.control.sendCustomCommand({ command: "G4 P0" });
-        //         self.control.sendCustomCommand({ command: "M119" });
-        //         self.statusMessage(self.statusMessage() + ".");
-        //     } else { //endstop untriggered, found maximum
-        //         //store result
-        //         self.calibrationResult.push(self.currentInterval - self.calibrationStepSize);
-        //         self.currentInterval = 0;
-        //         self._calibrateIteration();
-        //     }
-        // }
-
-        // self.loadEeprom = function () {
-        //     self.eepromData([]);
-        //     self._requestEepromData();
-        // };
-
-        // self.saveEeprom = function () {
-        //     var eepromData = self.eepromData();
-        //     _.each(eepromData, function (data) {
-        //         if (data.origValue != data.value) {
-        //             self._requestSaveDataToEeprom(data.dataType, data.position, data.value);
-        //             data.origValue = data.value;
-        //         }
-        //     });
-        // };
-
-        // self._getEepromValue = function (description) {
-        //     var eepromData = self.eepromData();
-        //     var result = false;
-        //     _.each(eepromData, function (data) {
-        //         if ((new RegExp(description)).test(data.description)) {
-        //             result = data.value;
-        //         }
-        //     });
-        //     return result;
-        // }
-
-        // self._setEepromValue = function (description, value) {
-        //     var eepromData = self.eepromData();
-        //     var result = false;
-        //     _.each(eepromData, function (data) {
-        //         if ((new RegExp(description)).test(data.description)) {
-        //             data.value = value;
-        //         }
-        //     });
-        // }
-
+    
         self._requestFirmwareInfo = function () {
             self.control.sendCustomCommand({ command: "M115" });
         };
