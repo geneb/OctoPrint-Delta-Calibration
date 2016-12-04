@@ -31,6 +31,9 @@ $(function () {
 
         self.eepromData = ko.observableArray([]);
 
+        self.probePoints = ko.observable(1);
+        self.calibrationFactors = ko.observable(1);
+
         self.statusMessage = ko.observable("");
         self.statusDebug = ko.observable("");
         self.statusM665 = ko.observable("");
@@ -484,8 +487,11 @@ $(function () {
         }
 
         self.beginDeltaCal = function () {
-            numPoints = 7;  // these should be configurable at some point.
+            numPoints = 10;  // these should be configurable at some point.
             numFactors = 6;
+            //numPoints = parseInt(self.probePoints);
+            //numFactors = parseInt(self.calibrationFactors);
+
             firmware = "Repetier"
             // here's where we begin to accumulate the data needed to run the actual calculations.
             setParameters();  // develops our probing points.

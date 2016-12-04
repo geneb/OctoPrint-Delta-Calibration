@@ -11,17 +11,21 @@ Your machine is <span style="color: red" data-bind="visible: isConnected() && !i
 
 
 <form class="form-horizontal">
-    <!---
-    <button data-bind="enable: isRepetierFirmware() && isConnected(), click: calibrateX">{{ _('Calibrate X-axis') }}</button>
-    <button data-bind="enable: isRepetierFirmware() && isConnected(), click: calibrateY">{{ _('Calibrate Y-axis') }}</button>
-    <button data-bind="enable: isRepetierFirmware() && isConnected(), click: calibrateZ">{{ _('Calibrate Z-axis') }}</button>
-    -->
+<!---
+    <table>
+        <tr>
+            <td>Number of Probe Points: </td>
+            <td><select data-bind="options: [4,7,10], value: probePoints"></select></td>
+        </tr>
+        <tr>
+            <td>Number of Calbration Factors: </td>
+            <td><select data-bind="options: [4,5,6,7], value: calibrationFactors"></select></td>
+        </tr>    
+    </table>
+-->
+    <br>
     <button data-bind="enable: isRepetierFirmware() && isConnected(), click: showCoords">{{ _('Show Coords') }}</button> <br><br>
     <button data-bind="enable: isRepetierFirmware() && isConnected() && isSeeMeCNCPrinter(), click: beginDeltaCal">{{ _('Begin Delta Calibration') }}</button>
-	
-   <!--- <button data-bind="enabled: isRepetierFirmware, click: loadEeprom">{{ _('Load EEprom') }}</button>
-   
-    <button data-bind="enabled: isRepetierFirmware, click: saveEeprom">{{ _('Save EEprom') }}</button> -->
 	
     <br><br><strong>Progress: </strong><span data-bind="text: statusMessage"></span><br>
 
