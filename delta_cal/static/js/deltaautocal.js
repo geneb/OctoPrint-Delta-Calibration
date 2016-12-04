@@ -32,6 +32,8 @@ $(function () {
         self.printerType = ko.observable("");
         self.statusMessage = ko.observable("");
         self.statusDebug = ko.observable("");
+        self.statusCalResult = ko.observable("");
+
         self.statusM665 = ko.observable("");
         self.statusM666 = ko.observable("");
 
@@ -481,7 +483,9 @@ $(function () {
             numFactors = 6;
             //numPoints = parseInt(self.probePoints);
             //numFactors = parseInt(self.calibrationFactors);
-
+            self.statusDebug("");
+            self.statusCalResult("");
+            
             firmware = "Repetier"
             // here's where we begin to accumulate the data needed to run the actual calculations.
             setParameters();  // develops our probing points.
@@ -508,15 +512,25 @@ $(function () {
                 self.probingActive = false; // all done!
                 convertOutgoingEndstops();
                 setNewParameters();
-                generateCommands();
-                self.control.sendCustomCommand({ command: m665 }); // commit changes!
-                self.control.sendCustomCommand({ command: m666 }); // commit changes!
+                //generateCommands();
+                //self.control.sendCustomCommand({ command: m665 }); // commit changes!
+                //self.control.sendCustomCommand({ command: m666 }); // commit changes!
+                console.log("X Stop offset is " + newXStop + "mm, or " + (parseFloat(newXStop) * 80) + " steps.");
+                console.log("Y Stop offset is " + newYStop + "mm, or " + (parseFloat(newYStop) * 80) + " steps.");
+                console.log("Z Stop offset is " + newZStop + "mm, or " + (parseFloat(newYStop) * 80) + " steps.");
+                self.saveDataToEeProm(1, "893", newXStop);
+                self.saveDataToEeProm(1, "895", newYStop);
+                self.saveDataToEeProm(1, "897", newZStop);
                 self.saveDataToEeProm(3, "901", (210.00 + parseFloat(newXPos)));
                 console.log("Wrote " + (210.00 + parseFloat(newXPos)) + " to [901]Alpha A(210)");
                 self.saveDataToEeProm(3, "905", (330.00 + parseFloat(newYPos)));
                 console.log("Wrote " + (330.00 + parseFloat(newYPos)) + " to [905]Alpha B(330)");
                 self.saveDataToEeProm(3, "909", (90.00 + parseFloat(newZPos)));
                 console.log("Wrote " + (90.00 + parseFloat(newZPos)) + " to [909]Alpha C(90)");
+                self.saveDataToEeProm(3, "881", newRodLength);
+                self.saveDataToEeProm(3, "885", newRadius);
+
+                self.control.sendCustomCommand({ command: "M500" });
                 self.statusMessage("Success, changes written to EEPROM.");
                 console.log(self.statusMessage());
                 self.calibrationComplete = true;
@@ -556,8 +570,8 @@ $(function () {
                 commands += "\n; Set homed height " + deltaParams.homedHeight.toFixed(2) + "mm in config.h";
             }
             self.commandText = commands;
-            self.statusM665(m665);
-            self.statusM666(m666);
+            //self.statusM665(m665);
+            //self.statusM666(m666);
         }
 
 
@@ -676,9 +690,10 @@ $(function () {
                 if (iteration == 2) { break; }
             }
 
-            console.log("Calibrated " + numFactors + " factors using " + numPoints + " points, deviation before " + Math.sqrt(initialSumOfSquares / numPoints).toFixed(2)
-                + " after " + expectedRmsError.toFixed(2));
-
+            var infoStr = "Calibrated " + numFactors + " factors using " + numPoints + " points, deviation before " + Math.sqrt(initialSumOfSquares / numPoints).toFixed(2)
+                + " after " + expectedRmsError.toFixed(2);
+            console.log(infoStr);
+            self.statusCalResult(infoStr);
         }
         ////////////////////////////////////////////////////////////////////////
         // End of dc42's code.

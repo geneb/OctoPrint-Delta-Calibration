@@ -23,11 +23,10 @@ Your machine is <span style="color: red" data-bind="visible: isConnected() && !i
     </table>
 -->
     <br>
-    <button data-bind="enable: isRepetierFirmware() && isConnected(), click: showCoords">{{ _('Show Coords') }}</button> <br><br>
+    <!--- <button data-bind="enable: isRepetierFirmware() && isConnected(), click: showCoords">{{ _('Show Coords') }}</button> <br><br> -->
     <button data-bind="enable: isRepetierFirmware() && isConnected() && isSeeMeCNCPrinter(), click: beginDeltaCal">{{ _('Begin Delta Calibration') }}</button>
 	
     <br><br><strong>Progress: </strong><span data-bind="text: statusMessage"></span><br>
-    <br><br><strong>M665 Command: </strong><span data-bind="text: statusM665"></span><br>
-    <br><br><strong>M666 Command: </strong><span data-bind="text: statusM666"></span><br>
-    <button data-bind="enabled: isRepetierFirmware, click: loadEeprom">{{ _('Load EEprom') }}</button>
+    <br><br><strong>Calibration Result: </strong><span data-bind="text: statusCalResult"></span><br>
+
 </form>
