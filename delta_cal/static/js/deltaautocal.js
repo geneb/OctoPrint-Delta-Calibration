@@ -29,6 +29,7 @@ $(function () {
         self.probePoints = ko.observable(1);
         self.calibrationFactors = ko.observable(1);
 
+        self.printerType = ko.observable("");
         self.statusMessage = ko.observable("");
         self.statusDebug = ko.observable("");
         self.statusM665 = ko.observable("");
@@ -40,6 +41,8 @@ $(function () {
         self.probeHot = false;
         self.probeCount = 0;  // so we can keep track of what probe iteration we're on.
         self.commandText = "";  // where the commands to fix things will go for display purposes.
+
+        self.calibrationComplete = false;
 
         // dc42 code
         var initialPoints = 7;
@@ -373,11 +376,6 @@ $(function () {
             }
         }
 
-        self.isConnected = ko.computed(function () {
-            return self.connection.isOperational() || self.connection.isPrinting() ||
-                self.connection.isReady() || self.connection.isPaused();
-        });
-
         function setParameters() {
             // this is kind of a kludge in order to get the routine working with a minimal amount of hackery.
             switch (self.machineType) {
@@ -398,10 +396,10 @@ $(function () {
                 }
                 case SMC_MAX_V2: {
                     stepsPerMM = 80;
-                    bedRadius = 91; // Throw's NaNs higher than 91! 140;
+                    bedRadius = 120;
 
                     oldRodLength = 291.06; // based on the ball-cup arms
-                    oldRadius = 200.0;
+                    oldRadius = 144.0;  // 200.0 - is the default in firmware is is widly wrong.
                     oldHomedHeight = 350.0; // max Z height.
                     oldXStop = 0;
                     oldYStop = 0;
@@ -428,10 +426,10 @@ $(function () {
                 }
                 case SMC_MAX_V3: {
                     stepsPerMM = 80;
-                    bedRadius = 91; // Throw's NaNs higher than 91! 140;
+                    bedRadius = 120;
 
                     oldRodLength = 291.06; // based on the ball-cup arms
-                    oldRadius = 200.0;
+                    oldRadius = 144.0;  // 200.0 - is the default in firmware is is widly wrong.
                     oldHomedHeight = 375.0; // max Z height.
                     oldXStop = 0;
                     oldYStop = 0;
@@ -503,8 +501,8 @@ $(function () {
 
         }
 
-        function startDeltaCalcEngine() {
-            
+        function startDeltaCalcEngine() { 
+
             try {
                 var rslt = DoDeltaCalibration();
                 self.probingActive = false; // all done!
@@ -513,10 +511,19 @@ $(function () {
                 generateCommands();
                 self.control.sendCustomCommand({ command: m665 }); // commit changes!
                 self.control.sendCustomCommand({ command: m666 }); // commit changes!
+                self.saveDataToEeProm(3, "901", (210.00 + parseFloat(newXPos)));
+                console.log("Wrote " + (210.00 + parseFloat(newXPos)) + " to [901]Alpha A(210)");
+                self.saveDataToEeProm(3, "905", (330.00 + parseFloat(newYPos)));
+                console.log("Wrote " + (330.00 + parseFloat(newYPos)) + " to [905]Alpha B(330)");
+                self.saveDataToEeProm(3, "909", (90.00 + parseFloat(newZPos)));
+                console.log("Wrote " + (90.00 + parseFloat(newZPos)) + " to [909]Alpha C(90)");
                 self.statusMessage("Success, changes written to EEPROM.");
+                console.log(self.statusMessage());
+                self.calibrationComplete = true;
             }
             catch (err) {
                 self.statusMessage(self.statusMessage() + "Error! - " + err);
+                console.log("Error! - " + err);
             }
         }
 
@@ -553,119 +560,6 @@ $(function () {
             self.statusM666(m666);
         }
 
-        self.currentAxis = "";
-        self.currentInterval = 0;
-        self.currentIteration = 0;
-        self.calibrationResult = [];
-        self.calibrationStepSize = 0.01;
-
-        self.extruderOffset = [];
-
-        self.onStartup = function () {
-            $('#settings_plugin_delta_cal_link a').on('show', function (e) {
-                if (self.isConnected() && !self.isRepetierFirmware())
-                    self._requestFirmwareInfo();
-            });
-        }
-
-        self.fromHistoryData = function (data) {
-            _.each(data.logs, function (line) {
-                var match = self.firmwareRegEx.exec(line);
-                if (match != null) {
-                    if (self.repetierRegEx.exec(match[0]))
-                        self.isRepetierFirmware(true);
-                }
-            });
-        };
-
-        self.fromCurrentData = function (data) {
-            if (!self.isRepetierFirmware()) {
-                _.each(data.logs, function (line) {
-                    var match = self.firmwareRegEx.exec(line);
-                    if (match) {
-                        if (self.repetierRegEx.exec(match[0])) {
-                            self.isSeeMeCNCPrinter(false); //.. unless otherwise!
-                            if (line.includes("ORION Delta")) {
-                                self.machineType = SMC_ORION;
-                                self.isSeeMeCNCPrinter(true);
-                                self.statusMessage("Orion Delta detected!")
-                            }
-                            if (line.includes("Rostock Max v2")) {
-                                self.machineType = SMC_MAX_V2;
-                                self.isSeeMeCNCPrinter(true);
-                                self.statusMessage("Rostock Max v2 detected!");
-                            }
-                            if (line.includes("ERIS Delta")) {
-                                self.machineType = SMC_ERIS;
-                                self.isSeeMeCNCPrinter(true);
-                                self.statusMessage("Eris Delta detected!");
-                            }
-                            if (line.includes("Rostock MAX v3")) {
-                                self.machineType = SMC_MAX_V3;
-                                self.isSeeMeCNCPrinter(true);
-                                self.statusMessage("Rostock Max v3 detected!");
-                            }
-                            self.isRepetierFirmware(true);
-
-                        }
-                    }
-                });
-            }
-            else {
-                _.each(data.logs, function (line) {
-                    var match = self.eepromDataRegEx.exec(line);
-                    if (match) {
-                        self.eepromData.push({
-                            dataType: match[1],
-                            position: match[2],
-                            origValue: match[3],
-                            value: match[3],
-                            description: match[4]
-                        });
-                    }
-                    if (self.sentM114) {
-                        if (line.includes("X") && line.includes("Y") && line.includes("Z") && line.includes("E")) {
-                            // we've got the result of an M114 here.
-                            self.statusMessage(self.statusMessage() + "M114 Result: " + line);
-                            self.sentM114 = false;
-                        }
-                    }
-                    if (line.includes("zprobing")) {
-                        self.probeHot = true;
-                    }
-                    if (self.probingActive && self.probeHot) {
-                        // find the result and show it!
-                        if (line.includes("X") && line.includes("Y") && line.includes("Z") && line.includes("E")) {
-                            // we've got the result of a probe!
-                            var coords = line.split(" ");
-                            self.statusDebug(self.statusDebug() + " Probe value: " + coords[3].substring(2));
-                            zBedProbePoints[self.probeCount] = parseFloat(coords[3].substring(2));
-                            self.probeHot = false;
-                            self.probeCount++;
-                            if (self.probeCount == numPoints) {
-                                startDeltaCalcEngine();  // doooo eeeeeeet!
-                            } else {
-                                // probe next point.
-                                self.control.sendCustomCommand({
-                                    command: "G0 X" + xBedProbePoints[self.probeCount] +
-                                    " Y" + yBedProbePoints[self.probeCount] + " Z" + DEFAULT_PROBE_HEIGHT + " F6500"
-                                });
-
-                                self.control.sendCustomCommand({ command: "G30" });
-                            }
-                        }
-                    }
-                });
-            }
-        };
-
-        self.onEventConnected = function () {
-            self._requestFirmwareInfo();
-        }
-
-        self.onEventDisconnected = function () {
-            self.isRepetierFirmware(false);
-        };
 
         function DoDeltaCalibration() {
             if (numFactors != 3 && numFactors != 4 && numFactors != 6 && numFactors != 7) {
@@ -782,21 +676,176 @@ $(function () {
                 if (iteration == 2) { break; }
             }
 
-            self.statusDebug(self.statusDebug() + "    Calibrated " + numFactors + " factors using " + numPoints + " points, deviation before " + Math.sqrt(initialSumOfSquares / numPoints).toFixed(2)
+            console.log("Calibrated " + numFactors + " factors using " + numPoints + " points, deviation before " + Math.sqrt(initialSumOfSquares / numPoints).toFixed(2)
                 + " after " + expectedRmsError.toFixed(2));
-     
+
         }
         ////////////////////////////////////////////////////////////////////////
         // End of dc42's code.
         ////////////////////////////////////////////////////////////////////////
 
+        // self.isCalComplete = ko.computed(function () {
+        //     return self.calibrationComplete;
+        // });
+        self.onStartup = function () {
+            $('#settings_plugin_delta_cal_link a').on('show', function (e) {
+                if (self.isConnected() && !self.isRepetierFirmware())
+                    self._requestFirmwareInfo();
+            });
+            self.statusMessage("");
+            self.statusDebug("");
+        }
 
+        self.fromHistoryData = function (data) {
+            _.each(data.logs, function (line) {
+                var match = self.firmwareRegEx.exec(line);
+                if (match != null) {
+                    if (self.repetierRegEx.exec(match[0]))
+                        self.isRepetierFirmware(true);
+                }
+            });
+        };
+
+        self.fromCurrentData = function (data) {
+            if (!self.isRepetierFirmware()) {
+                _.each(data.logs, function (line) {
+                    var match = self.firmwareRegEx.exec(line);
+                    if (match) {
+                        console.log("Firmware: " + line);
+                        if (self.repetierRegEx.exec(match[0])) {
+                            self.isRepetierFirmware(true);
+                            self.isSeeMeCNCPrinter(false); //.. unless otherwise!
+                            if (line.includes("ORION Delta")) {
+                                self.machineType = SMC_ORION;
+                                self.isSeeMeCNCPrinter(true);
+                                self.printerType("Orion Delta")
+                            }
+                            if (line.includes("Rostock Max v2")) {
+                                self.machineType = SMC_MAX_V2;
+                                self.isSeeMeCNCPrinter(true);
+                                self.printerType("Rostock Max v2");
+                            }
+                            if (line.includes("ERIS Delta")) {
+                                self.machineType = SMC_ERIS;
+                                self.isSeeMeCNCPrinter(true);
+                                self.printerType("Eris Delta");
+                            }
+                            if (line.includes("Rostock MAX v3")) {
+                                self.machineType = SMC_MAX_V3;
+                                self.isSeeMeCNCPrinter(true);
+                                self.printerType("Rostock Max v3");
+                            }
+
+                            console.log("Printer " + self.printerType());
+                        }
+                    }
+                });
+            }
+            else {
+                // this bit processes the result of the EEPROM read command...
+                _.each(data.logs, function (line) {
+                    var match = self.eepromDataRegEx.exec(line);
+                    if (match) {
+                        self.eepromData.push({
+                            dataType: match[1],
+                            position: match[2],
+                            origValue: match[3],
+                            value: match[3],
+                            description: match[4]
+
+                        });
+                        console.log("Desc: " + line);
+                    }
+                    if (self.sentM114) {
+                        if (line.includes("X") && line.includes("Y") && line.includes("Z") && line.includes("E")) {
+                            // we've got the result of an M114 here.
+                            self.statusMessage(self.statusMessage() + "M114 Result: " + line);
+                            self.sentM114 = false;
+                        }
+                    }
+                    if (line.includes("zprobing")) {
+                        self.probeHot = true;
+                    }
+                    if (self.probingActive && self.probeHot) {
+                        // find the result and show it!
+                        if (line.includes("X") && line.includes("Y") && line.includes("Z") && line.includes("E")) {
+                            // we've got the result of a probe!
+                            var coords = line.split(" ");
+                            //self.statusDebug(self.statusDebug() + " Probe value: " + coords[3].substring(2));
+                            self.statusMessage(self.statusMessage() + ".");
+                            console.log(" Probe value: " + coords[3].substring(2));
+                            zBedProbePoints[self.probeCount] = parseFloat(coords[3].substring(2));
+                            self.probeHot = false;
+                            self.probeCount++;
+                            if (self.probeCount == numPoints) {
+                                startDeltaCalcEngine();  // doooo eeeeeeet!
+                            } else {
+                                // probe next point.
+                                self.control.sendCustomCommand({
+                                    command: "G0 X" + xBedProbePoints[self.probeCount] +
+                                    " Y" + yBedProbePoints[self.probeCount] + " Z" + DEFAULT_PROBE_HEIGHT + " F6500"
+                                });
+
+                                self.control.sendCustomCommand({ command: "G30" });
+                            }
+                        }
+                    }
+                });
+            }
+        };
+
+        self.isConnected = ko.computed(function () {
+            return self.connection.isOperational() || self.connection.isPrinting() ||
+                self.connection.isReady() || self.connection.isPaused();
+        });
+
+        self.onEventConnected = function () {
+            self._requestFirmwareInfo();
+        }
+
+        self.onEventDisconnected = function () {
+            self.isRepetierFirmware(false);
+        };
+
+        function requestEepromData() {
+            self.control.sendCustomCommand({ command: "M205" });
+        }
+
+        //function saveDataToEeProm(data_type, position, value) {
+        self.saveDataToEeProm = function (data_type, position, value) {
+            var cmd = "M206 T" + data_type + " P" + position;
+            if (data_type == 3) {
+                cmd += " X" + value;
+                console.log("Sent EEPROM command: " + cmd);
+                self.control.sendCustomCommand({ command: cmd });
+            }
+            else {
+                cmd += " S" + value;
+                console.log("Sent EEPROM command: " + cmd);
+                self.control.sendCustomCommand({ command: cmd });
+            }
+        }
+        self.loadEeprom = function () {
+            self.eepromData([]);
+            self._requestEepromData();
+        };
+
+        self.saveEeprom = function () {
+            var eepromData = self.eepromData();
+            _.each(eepromData, function (data) {
+                if (data.origValue != data.value) {
+                    saveDataToEeProm(data.dataType, data.position, data.value);
+                    data.origValue = data.value;
+                }
+            });
+        };
         self.showCoords = function () {
             self.control.sendCustomCommand({ command: "M114" });
             self.statusMessage(self.statusMessage() + "Sent M114.");
             self.sentM114 = true;
+
         }
-    
+
         self._requestFirmwareInfo = function () {
             self.control.sendCustomCommand({ command: "M115" });
         };

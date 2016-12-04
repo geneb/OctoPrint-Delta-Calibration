@@ -4,9 +4,8 @@ Note that this is only designed to operate with the SeeMeCNC fork of Repetier Fi
 
 <strong>Connection Status: <span style="color: green" data-bind="visible: isConnected()">connected</span>
 <span style="color: red" data-bind="visible: !isConnected()">not connected</span></strong><br>
-
-Your machine is <span style="color: red" data-bind="visible: isConnected() && !isRepetierFirmware()">not</span> SeeMeCNC Repetier Firmware based<br>
-Your machine is <span style="color: red" data-bind="visible: isConnected() && !isSeeMeCNCPrinter()">not</span> a SeeMeCNC 3D printer!<br>
+Your machine is <span style="color: red" data-bind="visible: isConnected() && !isSeeMeCNCPrinter()">not</span> a SeeMeCNC
+<span data-bind="text: printerType"></span> 3D printer!<br>
 <br>
 
 
@@ -28,9 +27,7 @@ Your machine is <span style="color: red" data-bind="visible: isConnected() && !i
     <button data-bind="enable: isRepetierFirmware() && isConnected() && isSeeMeCNCPrinter(), click: beginDeltaCal">{{ _('Begin Delta Calibration') }}</button>
 	
     <br><br><strong>Progress: </strong><span data-bind="text: statusMessage"></span><br>
-
-    <br><br><strong>Debug Data: </strong><span data-bind="text: statusDebug"></span><br>
-
     <br><br><strong>M665 Command: </strong><span data-bind="text: statusM665"></span><br>
     <br><br><strong>M666 Command: </strong><span data-bind="text: statusM666"></span><br>
+    <button data-bind="enabled: isRepetierFirmware, click: loadEeprom">{{ _('Load EEprom') }}</button>
 </form>
