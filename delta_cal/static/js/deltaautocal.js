@@ -852,8 +852,8 @@ $(function () {
                             var zCoord = line.split(":");
                             //self.statusDebug(self.statusDebug() + " Probe value: " + coords[3].substring(2));
                             self.statusMessage(self.statusMessage() + ".");
-                            console.log(" Probe #" + parseInt(self.probeCount + 1) + " value: " + parseFloat(zCoord)); //coords[2].substring(2));
-                            zBedProbePoints[self.probeCount] = parseFloat(zCoord); //parseFloat(coords[3].substring(2));
+                            console.log(" Probe #" + parseInt(self.probeCount + 1) + " value: " + parseFloat(zCoord[2])); //coords[2].substring(2));
+                            zBedProbePoints[self.probeCount] = parseFloat(zCoord[2]); //parseFloat(coords[3].substring(2));
                             //self.probeHot = false;
                             self.probeCount++;
                             if (self.probeCount == numPoints) {
