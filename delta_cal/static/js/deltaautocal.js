@@ -385,66 +385,118 @@ $(function () {
                     stepsPerMM = 80;
                     bedRadius = 90;
 
-                    oldRodLength = 178.0; // based on the ball-cup arms
-                    oldRadius = 145.7;
-                    oldHomedHeight = 230.0; // max Z height.
-                    oldXStop = 0;
-                    oldYStop = 0;
-                    oldZStop = 0;
-                    oldXPos = 0;
-                    oldYPos = 0;
-                    oldZPos = 0;
-                    calcProbePoints();
+                    // oldRodLength = 178.0; // based on the ball-cup arms
+                    // oldRadius = 145.7;
+                    // oldHomedHeight = 230.0; // max Z height.
+                    // oldXStop = 0;
+                    // oldYStop = 0;
+                    // oldZStop = 0;
+                    // oldXPos = 0;
+                    // oldYPos = 0;
+                    // oldZPos = 0;
+                    // calcProbePoints();
                 }
                 case SMC_MAX_V2: {
                     stepsPerMM = 80;
                     bedRadius = 120;
 
-                    oldRodLength = 291.06; // based on the ball-cup arms
-                    oldRadius = 144.0;  // 200.0 - is the default in firmware is is widly wrong.
-                    oldHomedHeight = 350.0; // max Z height.
-                    oldXStop = 0;
-                    oldYStop = 0;
-                    oldZStop = 0;
-                    oldXPos = 0;
-                    oldYPos = 0;
-                    oldZPos = 0;
-                    calcProbePoints();
+                    // oldRodLength = 291.06; // based on the ball-cup arms
+                    // oldRadius = 144.0;  // 200.0 - is the default in firmware is is widly wrong.
+                    // oldHomedHeight = 350.0; // max Z height.
+                    // oldXStop = 0;
+                    // oldYStop = 0;
+                    // oldZStop = 0;
+                    // oldXPos = 0;
+                    // oldYPos = 0;
+                    // oldZPos = 0;
+                    // calcProbePoints();
                 }
                 case SMC_ERIS: {
                     stepsPerMM = 80;
                     bedRadius = 60;
 
-                    oldRodLength = 134.9; // based on the ball-cup arms
-                    oldRadius = 98.38;
-                    oldHomedHeight = 175.0; // max Z height.
-                    oldXStop = 0;
-                    oldYStop = 0;
-                    oldZStop = 0;
-                    oldXPos = 0;
-                    oldYPos = 0;
-                    oldZPos = 0;
-                    calcProbePoints();
+                    // oldRodLength = 134.9; // based on the ball-cup arms
+                    // oldRadius = 98.38;
+                    // oldHomedHeight = 175.0; // max Z height.
+                    // oldXStop = 0;
+                    // oldYStop = 0;
+                    // oldZStop = 0;
+                    // oldXPos = 0;
+                    // oldYPos = 0;
+                    // oldZPos = 0;
+                    // calcProbePoints();
                 }
                 case SMC_MAX_V3: {
                     stepsPerMM = 80;
                     bedRadius = 120;
 
-                    oldRodLength = 291.06; // based on the ball-cup arms
-                    oldRadius = 144.0;  // 200.0 - is the default in firmware is is widly wrong.
-                    oldHomedHeight = 375.0; // max Z height.
-                    oldXStop = 0;
-                    oldYStop = 0;
-                    oldZStop = 0;
-                    oldXPos = 0;
-                    oldYPos = 0;
-                    oldZPos = 0;
-                    calcProbePoints();
+                    // oldRodLength = 291.06; // based on the ball-cup arms
+                    // oldRadius = 144.0;  // 200.0 - is the default in firmware is is widly wrong.
+                    // oldHomedHeight = 375.0; // max Z height.
+                    // oldXStop = 0;
+                    // oldYStop = 0;
+                    // oldZStop = 0;
+                    // oldXPos = 0;
+                    // oldYPos = 0;
+                    // oldZPos = 0;
+                    // calcProbePoints();
                 }
+                    // assign the initial values we need to get started.
+                    
+                    var eepromData = self.eepromData();
+                    _.each(eepromData, function (data) {
+                        switch (data.position) {
+                            case "153": {  // Max Z height
+                                oldHomedHeight = parseFloat(data.value);
+                                console.log("Starting Homed Height: " + oldHomedHeight);
+                                break;
+                            }
+                            case "881": { // Diagonal Rod length
+                                oldRodLength = parseFloat(data.value);
+                                console.log("Starting Diagonal Rod Length: " + oldRodLength);
+                                break;
+                            }
+                            case "885": { // Diagonal Radius
+                                oldRadius = parseFloat(data.value);
+                                console.log("Starting Diagonal Radius: " + oldRadius);
+                                break;
+                            }
+                            case "893": {  // X Endstop offset
+                                oldXStop = parseInt(data.value);
+                                break;
+                            }
+                            case "895": {  // Y Endstop offset
+                                oldYStop = parseInt(data.value);
+                                break;
+                            }
+                            case "897": {  // Z Endstop offset
+                                oldZStop = parseInt(data.value);
+                                break;
+                            }
+                            case "901": { // X Tower Rotation offset
+                                oldXPos = parseFloat(data.value - 210.00);
+                                console.log("Starting X Pos. Offset: " + oldXPos);
+                                break;
+                            }
+                            case "905": { // Y Tower Rotation offset 
+                                oldYPos = parseFloat(data.value - 330.00);
+                                console.log("Starting Y Pos. Offset: " + oldYPos);
+                                break;
+                            }
+                            case "909": { // Z Tower rotation offset
+                                oldZPos = parseFloat(data.value - 90.00);
+                                console.log("Starting Y Pos. Offset: " + oldZPos);
+                                break;
+                            }
+                            default:
+                                break;
+                        }
+                    });
+                    
             }
             deltaParams = new DeltaParameters(oldRodLength, oldRadius, oldHomedHeight,
                 oldXStop, oldYStop, oldZStop, oldXPos, oldYPos, oldZPos);
-
+            calcProbePoints();
         }
 
         function convertIncomingEndstops() {
@@ -505,59 +557,8 @@ $(function () {
 
         }
 
-        function startDeltaCalcEngine() { 
-            // assign the initial values we need to get started.
-            var eepromData = self.eepromData();
-            _.each(eepromData, function (data) {
-                switch (data.position) {
-                    case "153": {  // Max Z height
-                        oldHomedHeight = data.value;
-                        console.log("Starting Homed Height: " + oldHomedHeight);
-                        break;
-                    }
-                    case "881": { // Diagonal Rod length
-                        oldRodLength = data.value;
-                        console.log("Starting Diagonal Rod Length: " + oldRodLength);
-                        break;    
-                    }
-                    case "885": { // Diagonal Radius
-                        oldRadius = data.value;
-                        console.log("Starting Diagonal Radius: " + oldRadius);
-                        break;    
-                    }
-                    case "893": {  // X Endstop offset
-                        oldXStop = data.value;
-                        break;
-                    }
-                    case "895": {  // Y Endstop offset
-                        oldYStop = data.value;
-                        break;
-                    }
-                    case  "897": {  // Z Endstop offset
-                        oldZStop = data.value;
-                        break;  
-                    }
-                    case "901": { // X Tower Rotation offset
-                        oldXPos = parseFloat(data.value - 210.00);
-                        console.log("Starting X Pos. Offset: " + oldXPos);
-                        break;    
-                    }
-                    case "905": { // Y Tower Rotation offset 
-                        oldYPos = parseFloat(data.value - 330.00);
-                        console.log("Starting Y Pos. Offset: " + oldYPos);
-                        break;    
-                    }
-                    case "909": { // Z Tower rotation offset
-                        oldZPos = parseFloat(data.value - 90.00);
-                        console.log("Starting Y Pos. Offset: " + oldZPos);
-                        break;    
-                    }
-                }
-                if (data.origValue != data.value) {
-                    saveDataToEeProm(data.dataType, data.position, data.value);
-                    data.origValue = data.value;
-                }
-            });
+        function startDeltaCalcEngine() {
+
             try {
                 var rslt = DoDeltaCalibration();
                 self.probingActive = false; // all done!
@@ -586,7 +587,7 @@ $(function () {
                 self.saveDataToEeProm(3, "881", deltaParams.diagonal.toFixed(2));
                 self.saveDataToEeProm(3, "885", deltaParams.radius.toFixed(2));
                 self.saveDataToEeProm(3, "925", bedRadius.toFixed(2));
-                
+
                 console.log("Diagonal Rod: " + deltaParams.diagonal.toFixed(2));
                 console.log("Horizontal Radius: " + deltaParams.radius.toFixed(2));
 
