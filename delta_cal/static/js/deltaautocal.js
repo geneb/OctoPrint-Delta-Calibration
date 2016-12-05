@@ -515,24 +515,33 @@ $(function () {
                 //generateCommands();
                 //self.control.sendCustomCommand({ command: m665 }); // commit changes!
                 //self.control.sendCustomCommand({ command: m666 }); // commit changes!
-                console.log("X Stop offset is " + deltaParams.xstop.toFixed(2) + " steps.");
-                console.log("Y Stop offset is " + deltaParams.ystop.toFixed(2) + " steps.");
-                console.log("Z Stop offset is " + deltaParams.zstop.toFixed(2) + " steps.");
-                self.saveDataToEeProm(1, "893", deltaParams.xstop.toFixed(2));
-                self.saveDataToEeProm(1, "895", deltaParams.ystop.toFixed(2));
-                self.saveDataToEeProm(1, "897", deltaParams.zstop.toFixed(2));
+                console.log("========================================")
+                console.log("X Stop offset is " + Math.round(deltaParams.xstop.toFixed(2)) + " steps.");
+                console.log("Y Stop offset is " + Math.round(deltaParams.ystop.toFixed(2)) + " steps.");
+                console.log("Z Stop offset is " + Math.round(deltaParams.zstop.toFixed(2)) + " steps.");
+                self.saveDataToEeProm(1, "893", Math.round(deltaParams.xstop.toFixed(2)));
+                self.saveDataToEeProm(1, "895", Math.round(deltaParams.ystop.toFixed(2)));
+                self.saveDataToEeProm(1, "897", Math.round(deltaParams.zstop.toFixed(2)));
+
                 self.saveDataToEeProm(3, "901", (210.00 + parseFloat(newXPos)));
-                console.log("Wrote " + (210.00 + parseFloat(newXPos)) + " to [901]Alpha A(210)");
                 self.saveDataToEeProm(3, "905", (330.00 + parseFloat(newYPos)));
-                console.log("Wrote " + (330.00 + parseFloat(newYPos)) + " to [905]Alpha B(330)");
                 self.saveDataToEeProm(3, "909", (90.00 + parseFloat(newZPos)));
-                console.log("Wrote " + (90.00 + parseFloat(newZPos)) + " to [909]Alpha C(90)");
+
+                console.log("Corrected Alpha A(210) to " + (210.00 + parseFloat(newXPos)) + ".");
+                console.log("Corrected Alpha B(330) to " + (330.00 + parseFloat(newYPos)) + ".");
+                console.log("Corrected Alpha C(90) to  " + (90.00 + parseFloat(newZPos)) + ".");
+
+
                 self.saveDataToEeProm(3, "881", deltaParams.diagonal.toFixed(2));
                 self.saveDataToEeProm(3, "885", deltaParams.radius.toFixed(2));
                 self.saveDataToEeProm(3, "925", bedRadius.toFixed(2));
+                
+                console.log("Diagonal Rod: " + deltaParams.diagonal.toFixed(2));
+                console.log("Horizontal Radius: " + deltaParams.radius.toFixed(2));
 
                 self.control.sendCustomCommand({ command: "M500" });
                 self.statusMessage("Success, changes written to EEPROM.");
+                self.control.sendCustomCommand({ command: "G28" });
                 console.log(self.statusMessage());
                 self.calibrationComplete = true;
             }
@@ -692,7 +701,7 @@ $(function () {
             }
 
             var infoStr = "Calibrated " + numFactors + " factors using " + numPoints + " points, deviation before " + Math.sqrt(initialSumOfSquares / numPoints).toFixed(2)
-                + " after " + expectedRmsError.toFixed(2);
+                + " after, " + expectedRmsError.toFixed(2);
             console.log(infoStr);
             self.statusCalResult(infoStr);
         }
@@ -770,7 +779,7 @@ $(function () {
                             description: match[4]
 
                         });
-                        console.log("Desc: " + line);
+                        //console.log("Desc: " + line);
                     }
                     if (self.sentM114) {
                         if (line.includes("X") && line.includes("Y") && line.includes("Z") && line.includes("E")) {
@@ -789,7 +798,7 @@ $(function () {
                             var coords = line.split(" ");
                             //self.statusDebug(self.statusDebug() + " Probe value: " + coords[3].substring(2));
                             self.statusMessage(self.statusMessage() + ".");
-                            console.log(" Probe value: " + coords[3].substring(2));
+                            console.log(" Probe #" + parseInt(self.probeCount + 1) + " value: " + coords[3].substring(2));
                             zBedProbePoints[self.probeCount] = parseFloat(coords[3].substring(2));
                             self.probeHot = false;
                             self.probeCount++;
@@ -832,12 +841,12 @@ $(function () {
             var cmd = "M206 T" + data_type + " P" + position;
             if (data_type == 3) {
                 cmd += " X" + value;
-                console.log("Sent EEPROM command: " + cmd);
+                //console.log("Sent EEPROM command: " + cmd);
                 self.control.sendCustomCommand({ command: cmd });
             }
             else {
                 cmd += " S" + value;
-                console.log("Sent EEPROM command: " + cmd);
+                //console.log("Sent EEPROM command: " + cmd);
                 self.control.sendCustomCommand({ command: cmd });
             }
         }
