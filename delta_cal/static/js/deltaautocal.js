@@ -485,7 +485,7 @@ $(function () {
             //numFactors = parseInt(self.calibrationFactors);
             self.statusDebug("");
             self.statusCalResult("");
-            
+
             firmware = "Repetier"
             // here's where we begin to accumulate the data needed to run the actual calculations.
             setParameters();  // develops our probing points.
@@ -515,20 +515,21 @@ $(function () {
                 //generateCommands();
                 //self.control.sendCustomCommand({ command: m665 }); // commit changes!
                 //self.control.sendCustomCommand({ command: m666 }); // commit changes!
-                console.log("X Stop offset is " + newXStop + "mm, or " + (parseFloat(newXStop) * 80) + " steps.");
-                console.log("Y Stop offset is " + newYStop + "mm, or " + (parseFloat(newYStop) * 80) + " steps.");
-                console.log("Z Stop offset is " + newZStop + "mm, or " + (parseFloat(newYStop) * 80) + " steps.");
-                self.saveDataToEeProm(1, "893", newXStop);
-                self.saveDataToEeProm(1, "895", newYStop);
-                self.saveDataToEeProm(1, "897", newZStop);
+                console.log("X Stop offset is " + deltaParams.xstop.toFixed(2) + " steps.");
+                console.log("Y Stop offset is " + deltaParams.ystop.toFixed(2) + " steps.");
+                console.log("Z Stop offset is " + deltaParams.zstop.toFixed(2) + " steps.");
+                self.saveDataToEeProm(1, "893", deltaParams.xstop.toFixed(2));
+                self.saveDataToEeProm(1, "895", deltaParams.ystop.toFixed(2));
+                self.saveDataToEeProm(1, "897", deltaParams.zstop.toFixed(2));
                 self.saveDataToEeProm(3, "901", (210.00 + parseFloat(newXPos)));
                 console.log("Wrote " + (210.00 + parseFloat(newXPos)) + " to [901]Alpha A(210)");
                 self.saveDataToEeProm(3, "905", (330.00 + parseFloat(newYPos)));
                 console.log("Wrote " + (330.00 + parseFloat(newYPos)) + " to [905]Alpha B(330)");
                 self.saveDataToEeProm(3, "909", (90.00 + parseFloat(newZPos)));
                 console.log("Wrote " + (90.00 + parseFloat(newZPos)) + " to [909]Alpha C(90)");
-                self.saveDataToEeProm(3, "881", newRodLength);
-                self.saveDataToEeProm(3, "885", newRadius);
+                self.saveDataToEeProm(3, "881", deltaParams.diagonal.toFixed(2));
+                self.saveDataToEeProm(3, "885", deltaParams.radius.toFixed(2));
+                self.saveDataToEeProm(3, "925", bedRadius.toFixed(2));
 
                 self.control.sendCustomCommand({ command: "M500" });
                 self.statusMessage("Success, changes written to EEPROM.");
