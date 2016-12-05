@@ -442,7 +442,7 @@ $(function () {
                     // calcProbePoints();
                 }
                     // assign the initial values we need to get started.
-                    
+
                     var eepromData = self.eepromData();
                     _.each(eepromData, function (data) {
                         switch (data.position) {
@@ -492,7 +492,7 @@ $(function () {
                                 break;
                         }
                     });
-                    
+
             }
             deltaParams = new DeltaParameters(oldRodLength, oldRadius, oldHomedHeight,
                 oldXStop, oldYStop, oldZStop, oldXPos, oldYPos, oldZPos);
@@ -587,9 +587,11 @@ $(function () {
                 self.saveDataToEeProm(3, "881", deltaParams.diagonal.toFixed(2));
                 self.saveDataToEeProm(3, "885", deltaParams.radius.toFixed(2));
                 self.saveDataToEeProm(3, "925", bedRadius.toFixed(2));
+                self.saveDataToEeProm(3, "153", deltaParams.homedHeight.toFixed(2));
 
                 console.log("Diagonal Rod: " + deltaParams.diagonal.toFixed(2));
                 console.log("Horizontal Radius: " + deltaParams.radius.toFixed(2));
+                console.log("Max Z Height is now: " + deltaParams.homedHeight.toFixed(2));
 
                 self.control.sendCustomCommand({ command: "M500" });
                 self.statusMessage("Success, changes written to EEPROM.");
