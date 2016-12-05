@@ -506,7 +506,58 @@ $(function () {
         }
 
         function startDeltaCalcEngine() { 
-
+            // assign the initial values we need to get started.
+            var eepromData = self.eepromData();
+            _.each(eepromData, function (data) {
+                switch (data.position) {
+                    case "153": {  // Max Z height
+                        oldHomedHeight = data.value;
+                        console.log("Starting Homed Height: " + oldHomedHeight);
+                        break;
+                    }
+                    case "881": { // Diagonal Rod length
+                        oldRodLength = data.value;
+                        console.log("Starting Diagonal Rod Length: " + oldRodLength);
+                        break;    
+                    }
+                    case "885": { // Diagonal Radius
+                        oldRadius = data.value;
+                        console.log("Starting Diagonal Radius: " + oldRadius);
+                        break;    
+                    }
+                    case "893": {  // X Endstop offset
+                        oldXStop = data.value;
+                        break;
+                    }
+                    case "895": {  // Y Endstop offset
+                        oldYStop = data.value;
+                        break;
+                    }
+                    case  "897": {  // Z Endstop offset
+                        oldZStop = data.value;
+                        break;  
+                    }
+                    case "901": { // X Tower Rotation offset
+                        oldXPos = parseFloat(data.value - 210.00);
+                        console.log("Starting X Pos. Offset: " + oldXPos);
+                        break;    
+                    }
+                    case "905": { // Y Tower Rotation offset 
+                        oldYPos = parseFloat(data.value - 330.00);
+                        console.log("Starting Y Pos. Offset: " + oldYPos);
+                        break;    
+                    }
+                    case "909": { // Z Tower rotation offset
+                        oldZPos = parseFloat(data.value - 90.00);
+                        console.log("Starting Y Pos. Offset: " + oldZPos);
+                        break;    
+                    }
+                }
+                if (data.origValue != data.value) {
+                    saveDataToEeProm(data.dataType, data.position, data.value);
+                    data.origValue = data.value;
+                }
+            });
             try {
                 var rslt = DoDeltaCalibration();
                 self.probingActive = false; // all done!
@@ -779,7 +830,7 @@ $(function () {
                             description: match[4]
 
                         });
-                        //console.log("Desc: " + line);
+                        console.log("Desc: " + line);
                     }
                     if (self.sentM114) {
                         if (line.includes("X") && line.includes("Y") && line.includes("Z") && line.includes("E")) {
