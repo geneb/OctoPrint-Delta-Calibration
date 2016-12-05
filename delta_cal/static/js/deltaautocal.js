@@ -40,7 +40,7 @@ $(function () {
         // Delta Calibration variables.
         self.sentM114 = false;
         self.probingActive = false;
-        self.probeHot = false;
+        //self.probeHot = false;
         self.probeCount = 0;  // so we can keep track of what probe iteration we're on.
         self.commandText = "";  // where the commands to fix things will go for display purposes.
 
@@ -842,19 +842,19 @@ $(function () {
                             self.sentM114 = false;
                         }
                     }
-                    if (line.includes("zprobing")) {
-                        self.probeHot = true;
-                    }
-                    if (self.probingActive && self.probeHot) {
+                    // if (line.includes("zprobing")) {
+                    //     self.probeHot = true;
+                    // }
+                    if (self.probingActive && line.includes("PROBE-ZOFFSET")) {  // self.probeHot) {
                         // find the result and show it!
-                        if (line.includes("X") && line.includes("Y") && line.includes("Z") && line.includes("E")) {
+                        //if (line.includes("X") && line.includes("Y") && line.includes("Z") && line.includes("E")) {
                             // we've got the result of a probe!
-                            var coords = line.split(" ");
+                            var zCoord = line.split(":");
                             //self.statusDebug(self.statusDebug() + " Probe value: " + coords[3].substring(2));
                             self.statusMessage(self.statusMessage() + ".");
-                            console.log(" Probe #" + parseInt(self.probeCount + 1) + " value: " + coords[3].substring(2));
-                            zBedProbePoints[self.probeCount] = parseFloat(coords[3].substring(2));
-                            self.probeHot = false;
+                            console.log(" Probe #" + parseInt(self.probeCount + 1) + " value: " + parseFloat(zCoord)); //coords[2].substring(2));
+                            zBedProbePoints[self.probeCount] = parseFloat(zCoord); //parseFloat(coords[3].substring(2));
+                            //self.probeHot = false;
                             self.probeCount++;
                             if (self.probeCount == numPoints) {
                                 startDeltaCalcEngine();  // doooo eeeeeeet!
@@ -867,7 +867,7 @@ $(function () {
 
                                 self.control.sendCustomCommand({ command: "G30" });
                             }
-                        }
+                        //}
                     }
                 });
             }
