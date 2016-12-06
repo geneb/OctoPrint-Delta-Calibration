@@ -906,7 +906,7 @@ $(function () {
             var cmd = "M206 T" + data_type + " P" + position;
             if (data_type == 3) {
                 cmd += " X" + value;
-                //console.log("Sent EEPROM command: " + cmd);
+                console.log("Sent EEPROM command: " + cmd);
                 self.control.sendCustomCommand({ command: cmd });
             }
             else {
@@ -915,20 +915,20 @@ $(function () {
                 self.control.sendCustomCommand({ command: cmd });
             }
         }
-        self.loadEeprom = function () {
+        self.loadEEProm = function () {
             self.eepromData([]);
             self._requestEepromData();
         };
 
-        self.saveEeprom = function () {
-            var eepromData = self.eepromData();
-            _.each(eepromData, function (data) {
-                if (data.origValue != data.value) {
-                    saveDataToEeProm(data.dataType, data.position, data.value);
-                    data.origValue = data.value;
-                }
-            });
-        };
+        // self.saveEeprom = function () {
+        //     var eepromData = self.eepromData();
+        //     _.each(eepromData, function (data) {
+        //         if (data.origValue != data.value) {
+        //             saveDataToEeProm(data.dataType, data.position, data.value);
+        //             data.origValue = data.value;
+        //         }
+        //     });
+        // };
         self.showCoords = function () {
             self.control.sendCustomCommand({ command: "M114" });
             self.statusMessage(self.statusMessage() + "Sent M114.");
