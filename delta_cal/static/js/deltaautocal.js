@@ -463,14 +463,17 @@ $(function () {
                             }
                             case "893": {  // X Endstop offset
                                 oldXStop = parseInt(data.value);
+                                console.log("Starting X Endstop offset: " + oldXStop);
                                 break;
                             }
                             case "895": {  // Y Endstop offset
                                 oldYStop = parseInt(data.value);
+                                console.log("Starting Y Endstop offset: " + oldYStop);
                                 break;
                             }
                             case "897": {  // Z Endstop offset
                                 oldZStop = parseInt(data.value);
+                                console.log("Starting Z Endstop offset: " + oldZStop);
                                 break;
                             }
                             case "901": { // X Tower Rotation offset
@@ -547,13 +550,21 @@ $(function () {
             self.probeCount = 0;
             self.probingActive = true;
             self.control.sendCustomCommand({ command: "G28" }); // home first!
-            // first probe.
-            self.control.sendCustomCommand({
-                command: "G0 X" + xBedProbePoints[self.probeCount] +
-                " Y" + yBedProbePoints[self.probeCount] + " Z" + DEFAULT_PROBE_HEIGHT + " F6500"
-            });
+            // build it all right now.
+            var strCommandBuffer = [];
 
-            self.control.sendCustomCommand({ command: "G30" });
+            for(var x = 0; x < numPoints; x++) {
+                strCommandBuffer.push("G0 X"  + xBedProbePoints[x] + " Y" + yBedProbePoints[x] + " Z" + DEFAULT_PROBE_HEIGHT + " F6500");
+                strCommandBuffer.push("G30");
+            }
+            self.control.sendCustomCommand({ commands: strCommandBuffer});
+
+            // self.control.sendCustomCommand({
+            //     command: "G0 X" + xBedProbePoints[self.probeCount] +
+            //     " Y" + yBedProbePoints[self.probeCount] + " Z" + DEFAULT_PROBE_HEIGHT + " F6500"
+            // });
+            
+            // self.control.sendCustomCommand({ command: "G30" });
 
         }
 
@@ -858,15 +869,15 @@ $(function () {
                             self.probeCount++;
                             if (self.probeCount == numPoints) {
                                 startDeltaCalcEngine();  // doooo eeeeeeet!
-                            } else {
-                                // probe next point.
-                                self.control.sendCustomCommand({
-                                    command: "G0 X" + xBedProbePoints[self.probeCount] +
-                                    " Y" + yBedProbePoints[self.probeCount] + " Z" + DEFAULT_PROBE_HEIGHT + " F6500"
-                                });
+                            } // else {
+                            //     // probe next point.
+                            //     self.control.sendCustomCommand({
+                            //         command: "G0 X" + xBedProbePoints[self.probeCount] +
+                            //         " Y" + yBedProbePoints[self.probeCount] + " Z" + DEFAULT_PROBE_HEIGHT + " F6500"
+                            //     });
 
-                                self.control.sendCustomCommand({ command: "G30" });
-                            }
+                            //     self.control.sendCustomCommand({ command: "G30" });
+                            // }
                         //}
                     }
                 });
