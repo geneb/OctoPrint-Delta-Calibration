@@ -10,6 +10,7 @@ $(function () {
         const SMC_MAX_V2 = 2;
         const SMC_ERIS = 3;
         const SMC_MAX_V3 = 5;
+        const SMC_H2 = 6;
         const DEFAULT_PROBE_HEIGHT = 25;
 
         self.machineType = 0;
@@ -401,7 +402,7 @@ $(function () {
               bedRadius = 120;
               break;
 
-            case SMC_MAX_V3:
+            case SMC_H2:
               bedRadius = 90;
               break;
           }
