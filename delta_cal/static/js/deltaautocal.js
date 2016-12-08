@@ -387,23 +387,23 @@ $(function () {
           stepsPerMM = 80;
           switch (self.machineType) {
             case SMC_ORION:
-              bedRadius = 90;
+              bedRadius = 80;
               break;
 
             case SMC_MAX_V2:
-              bedRadius = 120;
+              bedRadius = 140;
               break;
 
             case SMC_ERIS:
-              bedRadius = 60;
+              bedRadius = 65;
               break;
 
             case SMC_MAX_V3:
-              bedRadius = 120;
+              bedRadius = 140;
               break;
 
             case SMC_H2:
-              bedRadius = 90;
+              bedRadius = 80;
               break;
           }
           // assign the initial values we need to get started.
@@ -534,12 +534,12 @@ $(function () {
 
             if( oldDeviation != newDeviation ){
               //Hacky fix to get the adjustments to go the right way!
-              var newXStop = oldXStop + ( oldXStop - Math.round(deltaParams.xstop.toFixed(2)) );
-              var newYStop = oldYStop + ( oldYStop - Math.round(deltaParams.ystop.toFixed(2)) );
-              var newZStop = oldZStop + ( oldZStop - Math.round(deltaParams.zstop.toFixed(2)) );
-              var newDiagonal = oldRodLength + ( oldRodLength - deltaParams.diagonal.toFixed(2) );
-              var newRadius = oldRadius + ( oldRadius - deltaParams.radius.toFixed(2));
-              var newHomedHeight = oldHomedHeight + ( oldHomedHeight - deltaParams.homedHeight.toFixed(2));
+              var newXStop = Math.round(deltaParams.xstop.toFixed(2));
+              var newYStop = Math.round(deltaParams.ystop.toFixed(2));
+              var newZStop = Math.round(deltaParams.zstop.toFixed(2));
+              var newDiagonal = deltaParams.diagonal.toFixed(2);
+              var newRadius = deltaParams.radius.toFixed(2);
+              var newHomedHeight = deltaParams.homedHeight.toFixed(2);
 
               console.log("========================================")
               self.saveDataToEeProm(1, "893", newXStop);
@@ -549,12 +549,12 @@ $(function () {
               self.saveDataToEeProm(1, "897", newZStop);
               console.log("Z Stop offset is " + newZStop + " steps.");
 
-              self.saveDataToEeProm(3, "901", (210.00 - parseFloat(newXPos)));
-              console.log("Corrected Alpha A(210) to " + (210.00 - parseFloat(newXPos)) + ".");
-              self.saveDataToEeProm(3, "905", (330.00 - parseFloat(newYPos)));
-              console.log("Corrected Alpha B(330) to " + (330.00 - parseFloat(newYPos)) + ".");
-              self.saveDataToEeProm(3, "909", (90.00 - parseFloat(newZPos)));
-              console.log("Corrected Alpha C(90) to  " + (90.00 - parseFloat(newZPos)) + ".");
+              self.saveDataToEeProm(3, "901", (210 + parseFloat(newXPos)));
+              console.log("Corrected Alpha A(210) to " + (210 + parseFloat(newXPos)) + ".");
+              self.saveDataToEeProm(3, "905", (330 + parseFloat(newYPos)));
+              console.log("Corrected Alpha B(330) to " + (330 + parseFloat(newYPos)) + ".");
+              self.saveDataToEeProm(3, "909", (90 + parseFloat(newZPos)));
+              console.log("Corrected Alpha C(90) to  " + (90 + parseFloat(newZPos)) + ".");
 
 
               self.saveDataToEeProm(3, "881", newDiagonal);
@@ -769,7 +769,7 @@ $(function () {
                 var zCoord = line.split(":");
                 self.statusMessage(self.statusMessage() + ".");
                 console.log(" Probe #" + parseInt(self.probeCount + 1) + " value: " + parseFloat(zCoord[2]));
-                zBedProbePoints[self.probeCount] = parseFloat(zCoord[2]);
+                zBedProbePoints[self.probeCount] = -parseFloat(zCoord[2]);
                 self.probeCount++;
                 if (self.probeCount == numPoints) {
                   startDeltaCalcEngine();  // doooo eeeeeeet!
