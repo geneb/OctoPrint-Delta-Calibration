@@ -23,8 +23,8 @@ To use this plugin, you can install it using pip from a shell prompt:
     pip install https://github.com/geneb/OctoPrint-Delta-Calibration/archive/master.zip
 
 You must also be running a version of Repetier Firmware from SeeMeCNC with a firmware date of
-20161207 or later.  (Issue an M115 to see the firmware date, ex.:
-FIRMWARE_NAME:Repetier_0.92.2 FIRMWARE_DATE:20161207 MACHINE_TYPE:Rostock MAX v3)
+20161209 or later.  (Issue an M115 to see the firmware date, ex.:
+FIRMWARE_NAME:Repetier_0.92.2 FIRMWARE_DATE:20161209 MACHINE_TYPE:Rostock MAX v3)
 
 ****************************************************************
 ***  THIS IS VAGUELY TESTED SOFTWARE.  USE AT YOUR OWN RISK. ***
