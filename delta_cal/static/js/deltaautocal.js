@@ -403,7 +403,7 @@ $(function () {
               break;
 
             case SMC_H2:
-              bedRadius = 80;
+              bedRadius = 70;
               break;
           }
           // assign the initial values we need to get started.
@@ -736,6 +736,11 @@ $(function () {
                     self.machineType = SMC_MAX_V3;
                     self.isSeeMeCNCPrinter(true);
                     self.printerType("Rostock Max v3");
+                  }
+                  if (line.includes("Hacker H2")) {
+                    self.machineType = SMC_H2;
+                    self.isSeeMeCNCPrinter(true);
+                    self.printerType("Hacker H2");
                   }
 
                   console.log("Printer " + self.printerType());
