@@ -20,6 +20,7 @@ The core of this was shamelessly stripped from https://github.com/platsch/OctoPr
 Pretty much the only thing left is the routines used to read/write the EEPROM. :)
 
 To use this plugin, you can install it using pip from a shell prompt:
+
     pip install https://github.com/geneb/OctoPrint-Delta-Calibration/archive/master.zip
 
 If you're working with an OctoPi distribution, you can sign into the "pi" account and
