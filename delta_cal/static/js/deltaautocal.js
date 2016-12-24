@@ -52,7 +52,8 @@ $(function () {
 
         // dc42 code
         var initialPoints = 7;
-        var initialFactors = 7;
+        var initialFactors = 6; // Only 6 factor! 7 screws with the diagonal rod length 
+                                // and causes scaling errors -gwb 24Dec16
         var deltaParams;
         var firmware = "Repetier";
         var bedRadius;
