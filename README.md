@@ -45,6 +45,6 @@ Click the Load EEPROM button and then click the Begin Delta Calibration button.
 
 You may run it as many times as you like, but you MUST click the Load EEPROM button before you begin
 the calibration sequence!  If you fail to do this, the calibration routine will NOT know what the current
-parameters are and you'll get poor, bad, or moderately catestrophic results.
+parameters are and you'll get poor, bad, or moderately catastrophic results.
 
 Enjoy!
