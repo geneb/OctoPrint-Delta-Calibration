@@ -14,11 +14,11 @@ plugin_package = "delta_cal"
 plugin_name = "Delta-Auto-Calibration"
 
 # The plugin's version. Can be overwritten within OctoPrint's internal data via __plugin_version__ in the plugin module
-plugin_version = "0.1.2"
+plugin_version = "0.1.3"
 
 # The plugin's description. Can be overwritten within OctoPrint's internal data via __plugin_description__ in the plugin
 # module
-plugin_description = """Delta Auto-Calibration for SeeMeCNC Delta Printers"""
+plugin_description = """Delta Auto-Calibration for SeeMeCNC Delta Printers - 25Dec16"""
 
 # The plugin's author. Can be overwritten within OctoPrint's internal data via __plugin_author__ in the plugin module
 plugin_author = "Gene Buckle"

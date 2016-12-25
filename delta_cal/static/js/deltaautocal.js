@@ -500,8 +500,8 @@ $(function () {
         }
 
         self.beginDeltaCal = function () {
-          numPoints = 10;  // these should be configurable at some point.
-          numFactors = 7;
+          numPoints = initialPoints;  // these should be configurable at some point.
+          numFactors = initialFactors;
           self.statusDebug("");
           self.statusCalResult("");
 
