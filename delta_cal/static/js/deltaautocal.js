@@ -27,21 +27,13 @@ $(function () {
 
         self.eepromData = ko.observableArray([]);
 
-        self.probePoints = ko.observable(1);
-        self.calibrationFactors = ko.observable(1);
-
         self.printerType = ko.observable("");
         self.statusMessage = ko.observable("");
-        self.statusDebug = ko.observable("");
         self.statusCalResult = ko.observable("");
-
-        self.statusM665 = ko.observable("");
-        self.statusM666 = ko.observable("");
 
         // Delta Calibration variables.
         self.sentM114 = false;
         self.probingActive = false;
-        //self.probeHot = false;
         self.probeCount = 0;  // so we can keep track of what probe iteration we're on.
         self.commandText = "";  // where the commands to fix things will go for display purposes.
 
@@ -51,7 +43,7 @@ $(function () {
         var newDeviation = 0.0;
 
         // dc42 code
-        var initialPoints = 7;
+        var initialPoints = 10; // Was 7.  If I'd wanted it changed, I would have changed it myself!
         var initialFactors = 6; // Only 6 factor! 7 screws with the diagonal rod length 
                                 // and causes scaling errors -gwb 24Dec16
         var deltaParams;
@@ -502,7 +494,6 @@ $(function () {
         self.beginDeltaCal = function () {
           numPoints = initialPoints;  // these should be configurable at some point.
           numFactors = initialFactors;
-          self.statusDebug("");
           self.statusCalResult("");
 
           firmware = "Repetier";
@@ -543,26 +534,26 @@ $(function () {
               var newHomedHeight = deltaParams.homedHeight.toFixed(2);
 
               console.log("========================================")
-              self.saveDataToEeProm(1, "893", newXStop);
+              self.saveEEPROMData(1, "893", newXStop);
               console.log("X Stop offset is " + newXStop + " steps.");
-              self.saveDataToEeProm(1, "895", newYStop);
+              self.saveEEPROMData(1, "895", newYStop);
               console.log("Y Stop offset is " + newYStop + " steps.");
-              self.saveDataToEeProm(1, "897", newZStop);
+              self.saveEEPROMData(1, "897", newZStop);
               console.log("Z Stop offset is " + newZStop + " steps.");
 
-              self.saveDataToEeProm(3, "901", (210 + parseFloat(newXPos)));
+              self.saveEEPROMData(3, "901", (210 + parseFloat(newXPos)));
               console.log("Corrected Alpha A(210) to " + (210 + parseFloat(newXPos)) + ".");
-              self.saveDataToEeProm(3, "905", (330 + parseFloat(newYPos)));
+              self.saveEEPROMData(3, "905", (330 + parseFloat(newYPos)));
               console.log("Corrected Alpha B(330) to " + (330 + parseFloat(newYPos)) + ".");
-              self.saveDataToEeProm(3, "909", (90 + parseFloat(newZPos)));
+              self.saveEEPROMData(3, "909", (90 + parseFloat(newZPos)));
               console.log("Corrected Alpha C(90) to  " + (90 + parseFloat(newZPos)) + ".");
 
 
-              self.saveDataToEeProm(3, "881", newDiagonal);
+              self.saveEEPROMData(3, "881", newDiagonal);
               console.log("Diagonal Rod: " + newDiagonal);
-              self.saveDataToEeProm(3, "885", newRadius);
+              self.saveEEPROMData(3, "885", newRadius);
               console.log("Horizontal Radius: " + newRadius);
-              self.saveDataToEeProm(3, "153", newHomedHeight);
+              self.saveEEPROMData(3, "153", newHomedHeight);
               console.log("Max Z Height is now: " + newHomedHeight);
 
               self.control.sendCustomCommand({ command: "M500" });
@@ -622,8 +613,6 @@ $(function () {
               }
             }
 
-            //DebugPrint(derivativeMatrix.Print("Derivative matrix:"));
-
             // Now build the normal equations for least squares fitting
             var normalMatrix = new Matrix(numFactors, numFactors + 1);
             for (var i = 0; i < numFactors; ++i) {
@@ -640,8 +629,6 @@ $(function () {
               }
               normalMatrix.data[i][numFactors] = temp;
             }
-
-            //DebugPrint(normalMatrix.Print("Normal matrix:"));
 
             var solution = [];
             normalMatrix.GaussJordan(solution, numFactors);
@@ -669,7 +656,6 @@ $(function () {
               }
 
               expectedRmsError = Math.sqrt(sumOfSquares / numPoints);
-              //DebugPrint(PrintVector("Expected probe error", expectedResiduals));
             }
 
             // Decide whether to do another iteration Two is slightly better than one, but three doesn't improve things.
@@ -696,7 +682,6 @@ $(function () {
               self._requestFirmwareInfo();
           });
           self.statusMessage("");
-          self.statusDebug("");
         }
 
         self.fromHistoryData = function (data) {
@@ -798,12 +783,11 @@ $(function () {
           self.isRepetierFirmware(false);
         };
 
-        function requestEepromData() {
-          self.control.sendCustomCommand({ command: "M205" });
-        }
-
-        //function saveDataToEeProm(data_type, position, value) {
-        self.saveDataToEeProm = function (data_type, position, value) {
+        // function requestEepromData() {
+        //   self.control.sendCustomCommand({ command: "M205" });
+        // }
+        
+        self.saveEEPROMData = function (data_type, position, value) {
           var cmd = "M206 T" + data_type + " P" + position;
           if (data_type == 3) {
             cmd += " X" + value;
@@ -818,7 +802,7 @@ $(function () {
         }
         self.loadEEProm = function () {
           self.eepromData([]);
-          self._requestEepromData();
+          self.readEEPROMData();
         };
 
         self.showCoords = function () {
@@ -831,20 +815,20 @@ $(function () {
           self.control.sendCustomCommand({ command: "M115" });
         };
 
-        self._requestEepromData = function () {
+        self.readEEPROMData = function () {
           self.control.sendCustomCommand({ command: "M205" });
         }
-        self._requestSaveDataToEeprom = function (data_type, position, value) {
-          var cmd = "M206 T" + data_type + " P" + position;
-          if (data_type == 3) {
-            cmd += " X" + value;
-            self.control.sendCustomCommand({ command: cmd });
-          }
-          else {
-            cmd += " S" + value;
-            self.control.sendCustomCommand({ command: cmd });
-          }
-        }
+        // self._requestsaveEEPROMData = function (data_type, position, value) {
+        //   var cmd = "M206 T" + data_type + " P" + position;
+        //   if (data_type == 3) {
+        //     cmd += " X" + value;
+        //     self.control.sendCustomCommand({ command: cmd });
+        //   }
+        //   else {
+        //     cmd += " S" + value;
+        //     self.control.sendCustomCommand({ command: cmd });
+        //   }
+        // }
     }
 
     OCTOPRINT_VIEWMODELS.push([ DeltaAutoCalViewModel, ["controlViewModel", "connectionViewModel"], "#settings_plugin_delta_cal" ]);
