@@ -32,9 +32,6 @@ You must also be running a version of Repetier Firmware from SeeMeCNC with a fir
 20161209 or later.  (Issue an M115 to see the firmware date, ex.:
 FIRMWARE_NAME:Repetier_0.92.2 FIRMWARE_DATE:20161209 MACHINE_TYPE:Rostock MAX v3)
 
-****************************************************************
-***  THIS IS VAGUELY TESTED SOFTWARE.  USE AT YOUR OWN RISK. ***
-****************************************************************
 Before running this utility on your printer, you should issue a G29 command via the OctoPrint
 terminal.  This will kick off the internal calibration and will get the Z height properly set.
 
