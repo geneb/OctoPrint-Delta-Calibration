@@ -26,7 +26,7 @@ To use this plugin, you can install it using pip from a shell prompt:
 If you're working with an OctoPi distribution, you can sign into the "pi" account and
 install the plugin this way:
 
-    /home/pI/oprint/bin/pip install https://github.com/geneb/OctoPrint-Delta-Calibration/archive/master.zip
+    /home/pi/oprint/bin/pip install https://github.com/geneb/OctoPrint-Delta-Calibration/archive/master.zip
 
 You must also be running a version of Repetier Firmware from SeeMeCNC with a firmware date of
 20161209 or later.  (Issue an M115 to see the firmware date, ex.:
