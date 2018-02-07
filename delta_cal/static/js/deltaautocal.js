@@ -43,7 +43,7 @@ $(function () {
         var newDeviation = 0.0;
 
         // dc42 code
-        var initialPoints = 10; // Was 7.  If I'd wanted it changed, I would have changed it myself!
+        var initialPoints = 16; // was 10; // Was 7.
         var initialFactors = 6; // Only 6 factor! 7 screws with the diagonal rod length 
                                 // and causes scaling errors -gwb 24Dec16
         var deltaParams;
@@ -337,8 +337,47 @@ $(function () {
           return rslt;
         }
 
+        function probe(rad, startAt, n, xo, yo) {
+          var res = "";
+          for (var i = 0; i < n; ++i) {
+            var probeX = rad * Math.sin((2 * Math.PI * i)/n);
+            var probeY = rad * Math.cos((2 * Math.PI * i)/n);
+            var rad2 = Math.sqrt(Math.pow(probeX + xo, 2) + Math.pow(probeY + yo, 2));
+            if (rad2 > rad) {
+              var factor = rad/rad2;
+              probeX *= factor;
+              probeY *= factor;
+            }
+            xBedProbePoints[i+startAt] = probeX.toFixed(2);
+            yBedProbePoints[i+startAt] = probeY.toFixed(2);
+            zBedProbePoints[i+startAt] = 0.0;
+            console.log(" Point #" + parseInt(i+startAt) + " value: " + parseFloat(probeX.toFixed(2)) +
+                " / " + parseFloat(probeY).toFixed(2));
+          }
+        }
+
+        function calcProbePoints2() {
+          // new probe point generator, snatched straight from dc42's 
+          // bed probe point calculator, here: http://www.escher3d.com/pages/wizards/wizardbed.php
+
+          var nperipoints = 10;
+          var nhalfpoints = 6; // for 16 points total.
+          var ntotalpoints = nperipoints + nhalfpoints + 1;
+          var factors = 6; // we don't want to mess with the arm length.
+          var xoffset = 0;
+          var yoffset = 0; // offsets are zero since the nozzle IS the probe.
+          // set up the outer points...
+          probe(bedRadius, 0, nperipoints, xoffset, yoffset);
+          // ..then the inner points.
+          probe(bedRadius/2, nperipoints, nhalfpoints, xoffset, yoffset);
+          xBedProbePoints[ntotalpoints-1] = 0.0;
+          yBedProbePoints[ntotalpoints-1] = 0.0;
+          zBedProbePoints[ntotalpoints-1] = 0.0;
+        
+        }
 
         function calcProbePoints() {
+          // this is the original, 10 point probe point generator.
           if (numPoints == 4) {
             for (var i = 0; i < 3; ++i) {
               xBedProbePoints[i] = (bedRadius * Math.sin((2 * Math.PI * i) / 3)).toFixed(2);
@@ -350,6 +389,7 @@ $(function () {
             zBedProbePoints[3] = 0.0;
           }
           else {
+
             if (numPoints >= 7) {
               for (var i = 0; i < 6; ++i) {
                 xBedProbePoints[i] = (bedRadius * Math.sin((2 * Math.PI * i) / 6)).toFixed(2);
@@ -384,7 +424,7 @@ $(function () {
               break;
 
             case SMC_MAX_V2:
-              bedRadius = 140;
+              bedRadius = 135; //140;
               break;
 
             case SMC_ERIS:
@@ -392,7 +432,7 @@ $(function () {
               break;
 
             case SMC_MAX_V3:
-              bedRadius = 140;
+              bedRadius = 135; //140;
               break;
 
             case SMC_H2:
@@ -456,7 +496,9 @@ $(function () {
 
           deltaParams = new DeltaParameters(oldRodLength, oldRadius, oldHomedHeight,
                                             oldXStop, oldYStop, oldZStop, oldXPos, oldYPos, oldZPos);
-                                            calcProbePoints();
+                                            calcProbePoints2();
+          // if you want the old 10 point probe, change calcProbePoints2 to
+          // calcProbePoints.
         }
 
         function convertIncomingEndstops() {
@@ -708,7 +750,8 @@ $(function () {
                     self.isSeeMeCNCPrinter(true);
                     self.printerType("Orion Delta")
                   }
-                  if (line.includes("Rostock Max v2")) {
+                  if (line.includes("Rostock Max v2") || 
+			line.includes("White Max v2.75")) {
                     self.machineType = SMC_MAX_V2;
                     self.isSeeMeCNCPrinter(true);
                     self.printerType("Rostock Max v2");
@@ -759,10 +802,13 @@ $(function () {
               if (self.probingActive && line.includes("PROBE-ZOFFSET")) {
                 var zCoord = line.split(":");
                 self.statusMessage(self.statusMessage() + ".");
-                console.log(" Probe #" + parseInt(self.probeCount + 1) + " value: " + parseFloat(zCoord[2]));
+                console.log(" Probe #" + parseInt(self.probeCount + 1) + " value: " + parseFloat(zCoord[2]) +
+                " X: " + parseFloat(xBedProbePoints[self.probeCount]) +
+                " Y: " + parseFloat(yBedProbePoints[self.probeCount]));
+                
                 zBedProbePoints[self.probeCount] = -parseFloat(zCoord[2]);
                 self.probeCount++;
-                if (self.probeCount == numPoints) {
+                if (self.probeCount == numPoints)  { 
                   startDeltaCalcEngine();  // doooo eeeeeeet!
                 }
               }
