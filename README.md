@@ -44,4 +44,8 @@ You may run it as many times as you like, but you MUST click the Load EEPROM but
 the calibration sequence!  If you fail to do this, the calibration routine will NOT know what the current
 parameters are and you'll get poor, bad, or moderately catastrophic results.
 
+[07Feb18]
+I've updated the plugin so that it checks 16 points (10 outer, 6 inner) instead of the usual 10.  This 
+appears to result in a better calibration, at least with the machines I've tested on.
+
 Enjoy!
