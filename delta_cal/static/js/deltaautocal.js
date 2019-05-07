@@ -800,10 +800,20 @@ $(function () {
                 }
               }
           	if (self.probingActive && (line.includes("PROBE-ZOFFSET") || line.includes("Z-probe"))) {
-                var zCoord = line.split(":");
-                self.statusMessage(self.statusMessage() + ".");
-		console.log(" Probe #" + parseInt(self.probeCount + 1) + " value: " + ((-1*DEFAULT_PROBE_HEIGHT)+parseFloat(zCoord[2])) + " X: " + parseFloat(xBedProbePoints[self.probeCount]) + " Y: " + parseFloat(yBedProbePoints[self.probeCount]));
-                zBedProbePoints[self.probeCount] = -parseFloat(zCoord[2]) + DEFAULT_PROBE_HEIGHT;
+		   switch(line.includes()) {
+			case "Z-probe" :
+                	   var zCoord = line.split(":");
+                	   self.statusMessage(self.statusMessage() + ".");
+			   console.log(" Probe #" + parseInt(self.probeCount + 1) + " value: " + ((-1*DEFAULT_PROBE_HEIGHT)+parseFloat(zCoord[2])) + " X: " + parseFloat(xBedProbePoints[self.probeCount]) + " Y: " + parseFloat(yBedProbePoints[self.probeCount]));
+                	   zBedProbePoints[self.probeCount] = -parseFloat(zCoord[2]) + DEFAULT_PROBE_HEIGHT;
+			break;
+			case "PROBE-ZOFFSET" : 
+		           var zCoord = line.split(":");
+                           self.statusMessage(self.statusMessage() + ".");
+                           console.log(" Probe #" + parseInt(self.probeCount + 1) + " value: " + parseFloat(zCoord[2]) + " X: " + parseFloat(xBedProbePoints[self.probeCount]) + " Y: " + parseFloat(yBedProbePoints[self.probeCount]));
+                           zBedProbePoints[self.probeCount] = -parseFloat(zCoord[2]);
+			break;
+		   }
                 self.probeCount++;
                 if (self.probeCount == numPoints)  {
                   startDeltaCalcEngine();  // doooo eeeeeeet!
