@@ -11,7 +11,7 @@ $(function () {
         const SMC_ERIS = 3;
         const SMC_MAX_V3 = 5;
         const SMC_H2 = 6;
-        const DEFAULT_PROBE_HEIGHT = 25;
+        const DEFAULT_PROBE_HEIGHT = 5;
 
         self.machineType = 0;
 
@@ -799,16 +799,13 @@ $(function () {
                   self.sentM114 = false;
                 }
               }
-              if (self.probingActive && line.includes("PROBE-ZOFFSET")) {
+          	if (self.probingActive && (line.includes("PROBE-ZOFFSET") || line.includes("Z-probe"))) {
                 var zCoord = line.split(":");
                 self.statusMessage(self.statusMessage() + ".");
-                console.log(" Probe #" + parseInt(self.probeCount + 1) + " value: " + parseFloat(zCoord[2]) +
-                " X: " + parseFloat(xBedProbePoints[self.probeCount]) +
-                " Y: " + parseFloat(yBedProbePoints[self.probeCount]));
-                
-                zBedProbePoints[self.probeCount] = -parseFloat(zCoord[2]);
+		console.log(" Probe #" + parseInt(self.probeCount + 1) + " value: " + ((-1*DEFAULT_PROBE_HEIGHT)+parseFloat(zCoord[2])) + " X: " + parseFloat(xBedProbePoints[self.probeCount]) + " Y: " + parseFloat(yBedProbePoints[self.probeCount]));
+                zBedProbePoints[self.probeCount] = -parseFloat(zCoord[2]) + DEFAULT_PROBE_HEIGHT;
                 self.probeCount++;
-                if (self.probeCount == numPoints)  { 
+                if (self.probeCount == numPoints)  {
                   startDeltaCalcEngine();  // doooo eeeeeeet!
                 }
               }
