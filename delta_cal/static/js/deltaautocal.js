@@ -815,7 +815,7 @@ $(function () {
 			break;
 		   }
                 self.probeCount++;
-                if (self.probeCount == numPoints)  {
+                if (self.probeCount === numPoints)  {
                   startDeltaCalcEngine();  // doooo eeeeeeet!
                 }
               }
